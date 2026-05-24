@@ -5,12 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/components/ui/dialog';
 
 function Tasks() {
     const [tasks, setTasks] = useState([]);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [error, setError] = useState('');
+    const [editingTask, setEditingTask] = useState(null);
+    const [editTitle, setEditTitle] = useState('');
+    const [editDescription, setEditDescription] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -57,6 +67,27 @@ function Tasks() {
             fetchTasks();
         } catch (err) {
             setError('Error al actualizar la tarea');
+        }
+    };
+
+    const openEdit = (task) => {
+        setEditingTask(task);
+        setEditTitle(task.title);
+        setEditDescription(task.description || '');
+    };
+
+    const saveEdit = async () => {
+        if (!editTitle) return;
+        try {
+            await api.put(`/api/tasks/${editingTask.id}`, {
+                ...editingTask,
+                title: editTitle,
+                description: editDescription,
+            });
+            setEditingTask(null);
+            fetchTasks();
+        } catch (err) {
+            setError('Error al editar la tarea');
         }
     };
 
@@ -119,6 +150,13 @@ function Tasks() {
                                     <Button
                                         variant="outline"
                                         size="sm"
+                                        onClick={() => openEdit(task)}
+                                    >
+                                        ✏️
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
                                         onClick={() => toggleComplete(task)}
                                     >
                                         {task.completed ? 'Desmarcar' : 'Completar'}
@@ -137,6 +175,34 @@ function Tasks() {
                 </div>
 
             </div>
+
+            <Dialog open={!!editingTask} onOpenChange={() => setEditingTask(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Editar tarea</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3">
+                        <div className="flex flex-col gap-1">
+                            <Label>Título</Label>
+                            <Input
+                                value={editTitle}
+                                onChange={e => setEditTitle(e.target.value)}
+                            />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <Label>Descripción</Label>
+                            <Input
+                                value={editDescription}
+                                onChange={e => setEditDescription(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setEditingTask(null)}>Cancelar</Button>
+                        <Button onClick={saveEdit}>Guardar</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
