@@ -143,8 +143,19 @@ function Tasks() {
                                         {task.title}
                                     </p>
                                     {task.description && (
-                                        <p className="text-sm text-gray-500">{task.description}</p>
-                                    )}
+    <p className="text-sm text-gray-500">{task.description}</p>
+)}
+{task.createdAt && (
+    <p className="text-xs text-gray-400 mt-1">
+        {new Date(task.createdAt).toLocaleString('es-AR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        })}
+    </p>
+)}
                                 </div>
                                 <div className="flex gap-2">
                                     <Button
@@ -196,6 +207,7 @@ function Tasks() {
                                 onChange={e => setEditDescription(e.target.value)}
                             />
                         </div>
+                        
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setEditingTask(null)}>Cancelar</Button>
